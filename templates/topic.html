@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if not topic %}
+<section class="hero">
+    <h2>Topic not found</h2>
+    <p>Sorry, couldn't find anything related to that topic. (⇀‸↼‶)</p>
+    <a class="btn" href="{{ url_for('index') }}">← Back to home</a>
+</section>
+{% else %}
+<article class="topic-detail">
+    <a class="back-link" href="{{ url_for('index') }}">← Back to all topics</a>
+    <h2>{{ topic.title }}</h2>
+
+    <p class="topic-short">{{ topic.short_description }}</p>
+
+    <div class="topic-body">
+        {% for paragraph in topic.details.split('\n\n') %}
+        <p>{{ paragraph | replace('\n', '<br>') | safe }}</p>
+        {% endfor %}
+    </div>
+
+    {% if topic.links %}
+    <h3>Important links</h3>
+    <ul class="link-list">
+        {% for link in topic.links %}
+        <li>
+            <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">
+                {{ link.label }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if topic.example_questions %}
+    <h3>Example questions you could ask</h3>
+    <ul class="example-list">
+        {% for q in topic.example_questions %}
+        <li>{{ q }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</article>
+{% endif %}
+{% endblock %}

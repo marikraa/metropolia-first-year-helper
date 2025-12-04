@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ theme }}">
+<head>
+    <meta charset="UTF-8">
+    <title>Metropolia First-Year Student Guide</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<header class="header">
+
+    <div class="header-inner">
+        <div class="header-left">
+            <h1 class="logo">
+                <a href="{{ url_for('index') }}">Metropolia First-Year Student Guide</a>
+            </h1>
+            <p class="tagline">AI-integrated helper for first-year students ૮₍ ´ ꒳ `₎ა</p>
+        </div>
+
+        <div class="header-right">
+            {% if theme == "dark" %}
+            <a class="btn-toggle" href="{{ url_for('index', theme='light') }}">Light mode</a>
+            {% else %}
+            <a class="btn-toggle" href="{{ url_for('index', theme='dark') }}">Dark mode</a>
+            {% endif %}
+        </div>
+    </div>
+
+</header>
+
+<main class="main">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    <p>Not affiliated with Metropolia.</p>
+</footer>
+</body>
+</html>

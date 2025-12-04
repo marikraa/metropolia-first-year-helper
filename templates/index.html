@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <h2>Feeling lost in your first year?</h2>
+    <p>Ask a question or browse the most common topics that first-year students forget about.</p>
+
+    <form method="post" class="question-form">
+        <label for="question" class="sr-only">Ask anything</label>
+        <input
+                type="text"
+                id="question"
+                name="question"
+                placeholder="Example: Where do I see my schedule? How do I activate my Tuudo account?"
+                value="{{ query or '' }}"
+                autofocus
+        >
+        <button type="submit">Ask</button>
+    </form>
+
+    {% if query %}
+    <h3 class="section-title">Suggestions for: <span class="query-text">"{{ query }}"</span></h3>
+
+    {% if suggestions %}
+
+    {% if ai_answer %}
+    <div class="ai-answer-box">
+        <h4>AI overview</h4>
+        <p>{{ ai_answer }}</p>
+    </div>
+    {% endif %}
+
+    <p class="hint">These topics seem most related to your question:</p>
+
+    <div class="card-grid">
+        {% for topic in suggestions %}
+        <article class="card">
+            <h4>
+                <a href="{{ url_for('topic_detail', topic_id=topic.id) }}">
+                    {{ topic.title }}
+                </a>
+            </h4>
+            <p>{{ topic.short_description }}</p>
+            <a class="card-link" href="{{ url_for('topic_detail', topic_id=topic.id) }}">
+                Open details →
+            </a>
+        </article>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <p class="hint">
+        Couldn't match that to anything yet. Try different words or browse the topics below. (⇀‸↼‶)
+    </p>
+    {% endif %}
+    {% endif %}
+</section>
+
+<section class="topics-section">
+    <h3 class="section-title">Browse common first-year topics</h3>
+    <div class="card-grid">
+        {% for topic in topics %}
+        <article class="card">
+            <h4><a href="{{ url_for('topic_detail', topic_id=topic.id) }}">{{ topic.title }}</a></h4>
+            <p>{{ topic.short_description }}</p>
+            <a class="card-link" href="{{ url_for('topic_detail', topic_id=topic.id) }}">Open details →</a>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

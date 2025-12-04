@@ -1,8 +1,15 @@
+import os
 import requests
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL = "phi3"
+HF_API_KEY = os.getenv("HF_API_KEY")
 
+MODEL = "mistralai/Mistral-7B-Instruct-v0.2"
+
+API_URL = f"https://api-inference.huggingface.co/models/{MODEL}"
+
+HEADERS = {
+    "Authorization": f"Bearer {HF_API_KEY}"
+}
 
 def build_context(topics):
     blocks = []
@@ -17,45 +24,60 @@ DETAILS:
 {t.details}
 """
         blocks.append(text.strip())
+
     return "\n\n---\n\n".join(blocks)
 
 
 def generate_answer(question: str, topics):
+    # No API key = no AI
+    if not HF_API_KEY:
+        return None
+
     context = build_context(topics)
 
     prompt = f"""
-    You are a friendly and practical AI helper for first-year students at Metropolia University of Applied Sciences.
+You are a friendly and helpful assistant for first-year students at Metropolia University of Applied Sciences.
 
-    Your job:
-    - Answer clearly and helpfully using the information in CONTEXT.
-    - Rephrase and summarize naturally – do NOT talk about the context or what it does or does not contain.
-    - Give direct advice to the student.
-    - Be concise and supportive.
-    - If the answer is not available at all, say:
-      "I'm not fully sure based on the available info, but here's what I'd suggest…"
+Answer using ONLY the provided CONTEXT.
+Do not reference the context or discuss rules.
+Keep the reply concise and practical.
 
-    CONTEXT:
-    {context}
+CONTEXT:
+{context}
 
-    QUESTION:
-    {question}
+QUESTION:
+{question}
 
-    ANSWER:
-    """
+ANSWER:
+""".strip()
 
     payload = {
-        "model": MODEL,
-        "prompt": prompt,
-        "stream": False,
-        "options": {
-            "temperature": 0.2
+        "inputs": prompt,
+        "parameters": {
+            "max_new_tokens": 180,
+            "temperature": 0.2,
+            "do_sample": True,
+            "return_full_text": False
         }
     }
 
     try:
-        response = requests.post(OLLAMA_URL, json=payload, timeout=60)
+        response = requests.post(
+            API_URL,
+            headers=HEADERS,
+            json=payload,
+            timeout=60
+        )
         response.raise_for_status()
-        return response.json().get("response", "").strip()
+
+        result = response.json()
+
+        # HF sometimes returns an array, sometimes dict
+        if isinstance(result, list):
+            return result[0]["generated_text"].strip()
+
+        return result["generated_text"].strip()
+
     except Exception as e:
-        print("LLM ERROR:", e)
+        print("HF API ERROR:", e)
         return None

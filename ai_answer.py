@@ -3,7 +3,7 @@ import requests
 
 HF_API_KEY = os.getenv("HF_API_KEY")
 
-MODEL = "mistralai/Mistral-7B-Instruct-v0.2"
+MODEL = "microsoft/Phi-3-mini-4k-instruct"
 
 API_URL = f"https://api-inference.huggingface.co/models/{MODEL}"
 

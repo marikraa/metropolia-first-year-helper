@@ -1,83 +1,59 @@
 import os
-import requests
+from groq import Groq
 
-HF_API_KEY = os.getenv("HF_API_KEY")
+GSK_API_KEY = os.getenv("GSK_API_KEY")
 
-MODEL = "microsoft/Phi-3-mini-4k-instruct"
+client = None
+if GSK_API_KEY:
+    client = Groq(api_key=GSK_API_KEY)
 
-API_URL = f"https://router.huggingface.co/hf-inference/models/{MODEL}"
-
-HEADERS = {
-    "Authorization": f"Bearer {HF_API_KEY}"
-}
+MODEL = "llama-3.1-8b-instant"
 
 def build_context(topics):
     blocks = []
     for t in topics:
-        text = f"""
-TOPIC: {t.title}
-
-SUMMARY:
-{t.short_description}
-
-DETAILS:
-{t.details}
-"""
-        blocks.append(text.strip())
-
+        blocks.append(
+            f"TOPIC: {t.title}\n"
+            f"{t.short_description}\n"
+            f"{t.details}"
+        )
     return "\n\n---\n\n".join(blocks)
 
 
 def generate_answer(question: str, topics):
-    # No API key = no AI
-    if not HF_API_KEY:
+
+    if not client:
+        print("GSK_API_KEY missing")
         return None
 
-    context = build_context(topics)
-
     prompt = f"""
-You are a friendly and helpful assistant for first-year students at Metropolia University of Applied Sciences.
+You are a helpful assistant for first-year students at Metropolia University of Applied Sciences.
 
-Answer using ONLY the provided CONTEXT.
-Do not reference the context or discuss rules.
-Keep the reply concise and practical.
+Only answer using the information below.
+Do not invent details if information is missing.
+Write clearly and concisely.
 
-CONTEXT:
-{context}
+INFORMATION:
+{build_context(topics)}
 
 QUESTION:
 {question}
 
 ANSWER:
-""".strip()
-
-    payload = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": 180,
-            "temperature": 0.2,
-            "do_sample": True,
-            "return_full_text": False
-        }
-    }
+"""
 
     try:
-        response = requests.post(
-            API_URL,
-            headers=HEADERS,
-            json=payload,
-            timeout=60
+        completion = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2,
+            max_tokens=150,
         )
-        response.raise_for_status()
 
-        result = response.json()
-
-        # HF sometimes returns an array, sometimes dict
-        if isinstance(result, list):
-            return result[0]["generated_text"].strip()
-
-        return result["generated_text"].strip()
+        return completion.choices[0].message.content.strip()
 
     except Exception as e:
-        print("HF API ERROR:", e)
-        return None
+        print("GROQ API ERROR:", e)
+        return "The AI service is temporarily unavailable."

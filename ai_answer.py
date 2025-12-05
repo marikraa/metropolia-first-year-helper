@@ -5,7 +5,7 @@ HF_API_KEY = os.getenv("HF_API_KEY")
 
 MODEL = "microsoft/Phi-3-mini-4k-instruct"
 
-API_URL = f"https://router.huggingface.co/models/{MODEL}"
+API_URL = f"https://router.huggingface.co/hf-inference/models/{MODEL}"
 
 HEADERS = {
     "Authorization": f"Bearer {HF_API_KEY}"

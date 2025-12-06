@@ -90,7 +90,7 @@ can also be switched between dark and light mode.
 
 ![Homepage_lightmode](usage_images/lightmode_homepage.png)
 
-On the homepage, the user can type their question to the textfield, and they will receive an answer by an LLM as well as links to the topic cards
+On the homepage, the user can type their question on the textfield, and they will receive an answer by an LLM as well as links to the topic cards
 that best match with the asked question.
 
 ![Homepage_answer](usage_images/ai_answer.png)
